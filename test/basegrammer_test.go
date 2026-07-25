@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func Test_all_question(t *testing.T) {
+func Test_all_question_basegrammer(t *testing.T) {
 	basepractice.Question1()
 	basepractice.Question2()
 	basepractice.Question3()
