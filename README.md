@@ -14,4 +14,9 @@
 编程源码在`baseprectice/arrslicepractice.go`  
 测试源码在`test/arrslicepractice_test.go`  
 
+## functionmethodpractice
+含有函数方法操作10题  
+编程源码在`baseprectice/functionmethodpractice.go`  
+测试源码在`test/functionmethodpractice_test.go`  
+
 在`test/`目录下执行`go test -v ./`可全跑测试
