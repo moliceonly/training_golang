@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-type QuestionInput struct {
+type controlpracticeQuestionInput struct {
 	Q11 int
 	Q12 int
 	Q13 int
@@ -18,7 +18,7 @@ type QuestionInput struct {
 
 func Test_all_question_controlpratice(t *testing.T) {
 
-	Input := QuestionInput{
+	Input := controlpracticeQuestionInput{
 		Q11: 10,
 		Q12: 12,
 		Q13: 2023,
