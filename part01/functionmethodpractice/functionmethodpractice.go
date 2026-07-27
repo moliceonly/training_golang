@@ -1,4 +1,4 @@
-package basepractice
+package functionmethodpractice
 
 import "fmt"
 

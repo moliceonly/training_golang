@@ -1,4 +1,4 @@
-package basepractice
+package arrslicepractice
 
 import "fmt"
 

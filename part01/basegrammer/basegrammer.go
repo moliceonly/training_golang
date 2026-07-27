@@ -1,4 +1,4 @@
-package basepractice
+package basegrammer
 
 import "fmt"
 
@@ -79,9 +79,9 @@ func Question9() {
 //10.在if控制语句中声明变量，验证作用域
 func Question10() {
 	if a := 1; a<0{
-		fmt.Println("a小于0: %d", a)
+		fmt.Printf("a小于0: %d\n", a)
 	} else {
-		fmt.Println("a大于等于0: %d", a)
+		fmt.Printf("a大于等于0: %d\n", a)
 	}
 	// fmt.Printf("a的值为: %d", a) 此处用于测试验证域，若取消注释则会导致编译失败，因为a的作用域在if语句中
 }
