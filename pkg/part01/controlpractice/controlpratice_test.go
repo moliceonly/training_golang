@@ -5,27 +5,27 @@ import (
 )
 
 type controlpracticeQuestionInput struct {
-	Q11 int
-	Q12 int
-	Q13 int
+	Q11   int
+	Q12   int
+	Q13   int
 	Q14_1 int
 	Q14_2 int
 	Q14_3 int
-	Q17 int
-	Q20 string
+	Q17   int
+	Q20   string
 }
 
 func Test_all_question_controlpratice(t *testing.T) {
 
 	Input := controlpracticeQuestionInput{
-		Q11: 10,
-		Q12: 12,
-		Q13: 2023,
+		Q11:   10,
+		Q12:   12,
+		Q13:   2023,
 		Q14_1: 12,
 		Q14_2: 24,
 		Q14_3: 13,
-		Q17: 13,
-		Q20: "哇，云朵，哒哒哒哒哒",
+		Q17:   13,
+		Q20:   "哇，云朵，哒哒哒哒哒",
 	}
 
 	Question11(Input.Q11)

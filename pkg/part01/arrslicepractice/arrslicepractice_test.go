@@ -10,9 +10,8 @@ type arrslicepracticeQuestionInput struct {
 	Q30 []int
 }
 
-
 func Test_all_question_arrslicepractice(t *testing.T) {
-	
+
 	Input := arrslicepracticeQuestionInput{
 		Q26: []int{23, 82, 12, 42, 213, 2, 92, 72},
 		Q29: []int{23, 82, 12, 42, 213, 2, 92, 72},

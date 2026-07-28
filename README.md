@@ -1,41 +1,71 @@
-# Go基础练习题
+# training_golang
 
-目录已按 `part01/` 拆分，对齐 `train_hub/go-web-roadmap.html` 的 Part 01。
+对齐 `go-web-roadmap.html` **Part 01**。已完成：**1.1 / 1.2 / 1.3**；进行中：**1.4**。
 
-题号连续：**1 → 74**。
+## 目录
 
-## part01 练习一览
-
-| 包 | 题号 | 对应路线 | 说明 |
-|----|------|----------|------|
-| `part01/basegrammer` | 1–10 | 起点 | 基础语法 |
-| `part01/controlpractice` | 11–20 | 起点 | 流程控制 |
-| `part01/arrslicepractice` | 21–30 | 起点 / 1.1 切片 | 数组与切片 |
-| `part01/functionmethodpractice` | 31–40 | 起点 | 函数与方法 |
-| `part01/structpointerpractice` | 41–50 | **1.1** | 结构体与指针 |
-| `part01/structpointerpractice` | 51–56 | **1.1 补强** | 值接收者账户、深浅拷贝、JSON、map 标签、iota |
-| `part01/structpointerpractice` | 70–72 | **1.1 补强** | 匿名嵌入、nil map、切片截取与内存滞留（仅题干） |
-| `part01/errorinterfacepractice` | 57–65 | **1.2** | 错误与接口 |
-| `part01/errorinterfacepractice` | 66–69 | **1.2 补强** | `%w` / `As` / type switch / recover |
-| `part01/errorinterfacepractice` | 73–74 | **1.2 补强** | 类型断言 ok 形式、any 与泛型边界（仅题干） |
-
-## 如何跑测试
-
-```bash
-cd part01/structpointerpractice && go test -v ./
-cd ../errorinterfacepractice && go test -v ./
+```text
+training_golang/           # module: training_golang
+├── cmd/demo/              # 本 module 入口，调用 internal
+├── internal/
+│   ├── calc/              # 内部计价 Add / Price
+│   └── errorinterfacepractice/  # 1.2 错误与接口练习
+├── pkg/part01/            # 练习包
+│   ├── …                  # 起点 / 1.1
+│   └── stdlibpractice/    # 1.4 标准库 SDK（题 75–85，仅题干）
+└── test_internal/         # 独立 module，验证无法 import internal
 ```
 
-或在模块根目录：
+## 进度对照
+
+| 路线 | 状态 | 落在哪 |
+|------|------|--------|
+| **1.1** 类型与数据结构 | 完成 | `pkg/part01/structpointerpractice` 等 |
+| **1.2** 接口、错误与控制流 | 完成 | `internal/errorinterfacepractice` |
+| **1.3** 包 / module / 工程习惯 | 完成 | `cmd/` · `internal/` · `pkg/` · `test_internal/` |
+| **1.4** 标准库 SDK | 进行中 | `pkg/part01/stdlibpractice`（75–85） |
+
+## 各包简要说明
+
+| 路径 | 实现了什么 |
+|------|------------|
+| `pkg/part01/basegrammer` | 变量、常量、类型转换、作用域等基础语法 |
+| `pkg/part01/controlpractice` | if / switch / for 等流程控制 |
+| `pkg/part01/arrslicepractice` | 数组与切片（增删、遍历、扩容） |
+| `pkg/part01/functionmethodpractice` | 函数、可变参数、闭包、defer |
+| `pkg/part01/structpointerpractice` | 结构体/指针/接收者、深浅拷贝、JSON、标签 map、iota、匿名嵌入等 |
+| `pkg/part01/stdlibpractice` | **1.4**：文本库、time、JSON、Base64、SHA256、AES-GCM、CSV、regexp/slices、flag、slog、context |
+| `internal/errorinterfacepractice` | error、接口、Is/As、断言、recover 等 |
+| `internal/calc` | `Add`、`Price` |
+| `cmd/demo` | 同 module 调用 `internal` |
+| `test_internal` | 外 module 验证 `internal` 边界 |
+
+## 1.4 题目与场景对照
+
+| 题 | 知识要点 | 贴近场景 |
+|----|----------|----------|
+| 75 | fmt / strings / strconv / bytes / unicode | API 入参清洗 |
+| 76 | time | 活动截止：时区 + Duration |
+| 77 | encoding/json | API 契约：往返、忽略密码、自定义 Role |
+| 78 | encoding/base64 | 令牌进 Header / URL |
+| 79 | crypto/sha256 | 盐 + 密码摘要落库 |
+| 80 | crypto/aes + GCM | 配置密钥字段加解密 |
+| 81 | encoding/csv（+xml 选做） | 用户列表导出 |
+| 82 | regexp / sort / slices / maps | 手机号校验、标签规范化 |
+| 83 | flag | 运维工具启动参数 |
+| 84 | log/slog | 关键操作结构化日志 |
+| 85 | context | 超时取消后续处理 |
+
+## 常用命令
 
 ```bash
-go test -v ./part01/structpointerpractice/
-go test -v ./part01/errorinterfacepractice/
+go run ./cmd/demo
+
+cd test_internal && go run ./cmd/demo   # 应失败：internal 不可用
+
+go test -v ./pkg/part01/stdlibpractice/
+go test -v ./pkg/part01/...
+go test -v ./internal/...
 ```
 
-## 建议顺序
-
-1. 41–50（结构体/指针）
-2. 51–56、70–72（1.1 补强）
-3. 57–69、73–74（1.2 错误/接口及补强）
-4. 再进入路线图 1.3 包结构 / 1.4 标准库
+实现完 1.4 后进入路线图 **1.5** 测试与并发基础。

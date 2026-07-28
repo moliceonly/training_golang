@@ -16,10 +16,10 @@ type functionmethodpracticeQuestionInput struct {
 
 func Test_all_question_functionmethodpractice(t *testing.T) {
 
-	Input := functionmethodpracticeQuestionInput {
+	Input := functionmethodpracticeQuestionInput{
 		Q31: [2]int{2, 20},
-		Q32: [2]int{122,23},
-		Q33: [2]int{32,42},
+		Q32: [2]int{122, 23},
+		Q33: [2]int{32, 42},
 		Q36: 5,
 		Q37: 10,
 		Q39: [2]float64{2.12, 4.23},
@@ -35,5 +35,5 @@ func Test_all_question_functionmethodpractice(t *testing.T) {
 	Question37(Input.Q37)
 	Question38()
 	Question39(Input.Q39[0], Input.Q39[1])
-	Question40(Input.Q40[0], Input.Q40[1],Input.Q40[2])
+	Question40(Input.Q40[0], Input.Q40[1], Input.Q40[2])
 }
