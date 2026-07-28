@@ -4,8 +4,28 @@
 package stdlibpractice
 
 import (
+	"bytes"
 	"context"
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/base64"
+	"encoding/hex"
+	"encoding/json"
+	"errors"
+	"flag"
+	"fmt"
+	"io"
+	"log/slog"
+	"maps"
+	"os"
+	"regexp"
+	"slices"
+	"strconv"
+	"strings"
 	"time"
+	"unicode"
 )
 
 // ---------------------------------------------------------------------------
@@ -21,12 +41,34 @@ import (
 //     （体会 string/[]byte 转换；真实业务更常用 strings.ToUpper，此处为练 bytes）
 // 在 Question75 中分别演示成功与失败各一次并打印
 func SanitizeProfile(rawName string, ageStr string) (name string, age int, err error) {
-	// TODO
-	return "", 0, nil
+	
+	rawName, ageStr = strings.TrimSpace(rawName), strings.TrimSpace(ageStr)
+	
+	if rawName == "" {
+		err = errors.Join(errors.New("名字为空"))
+	}
+	for _, letter := range rawName {
+		if  !unicode.IsDigit(letter) && !unicode.IsLetter(letter) {
+			err = errors.Join(err, errors.New("名字非法"))
+		}
+	}
+
+	age, ageerr := strconv.Atoi(ageStr)
+	fmt.Errorf("invalid age: %w", ageerr)
+	err = errors.Join(err, ageerr)
+
+	NAME := bytes.ToUpper([]byte(rawName))
+	name = string(NAME)
+	// name = strings.ToUpper(rawName)
+
+	return name, age, err
 }
 
 func Question75() {
-	// TODO
+	name1, age1, err1 := SanitizeProfile(" xiaoming ", "17")
+	name2, age2, err2 := SanitizeProfile(" ", "-2")
+	fmt.Printf("正确案例: %s, %d, %s\n", name1, age1, err1) //没有错误err1为nil
+	fmt.Printf("错误案例: %s, %d, %s\n\n", name2, age2, err2)
 }
 
 // ---------------------------------------------------------------------------
@@ -40,12 +82,25 @@ func Question75() {
 //   - remain = 截止时刻.Sub(当前时间)；若已过期 remain 可为负
 // 在 Question76 中打印 remain 与 localStr；可用 time.NewTimer 演示「剩不到 1s 就等一下」的直觉（可选）
 func DeadlineInLocation(deadlineUTC string, locName string) (remain time.Duration, localStr string, err error) {
-	// TODO
-	return 0, "", nil
+	
+	deadline, parseerr := time.Parse(time.RFC3339, deadlineUTC)
+
+	loc, loadlocerr := time.LoadLocation(locName)
+
+	local := deadline.In(loc)
+	localStr = local.Format("2006-01-02 15:04:05 MST")
+
+	remain = local.Sub(time.Now())
+
+	err = errors.Join(parseerr, loadlocerr)
+
+	return remain, localStr, err
 }
 
 func Question76() {
-	// TODO
+	r, l, err := DeadlineInLocation("2026-08-01T12:00:00Z", "Asia/Shanghai")
+	fmt.Printf("时间: %v, 地区: %s, 处理错误: %s\n\n", r, l, err)
+	fmt.Println()
 }
 
 // ---------------------------------------------------------------------------
@@ -71,31 +126,69 @@ func Question76() {
 type Role string
 
 type APIUser struct {
-	// TODO: 字段与 json tag
+	ID       uint64 `json:"id"`
+    Name     string `json:"name"`
+    Password string `json:"-"`
+    Role     Role   `json:"role"`
 }
 
 func (r Role) MarshalJSON() ([]byte, error) {
-	// TODO
-	return nil, nil
+	if r != "admin" && r != "user" {
+		return nil, errors.New("Invalid role")
+	}
+	return json.Marshal(strings.ToUpper(string(r)))
 }
 
 func (r *Role) UnmarshalJSON(b []byte) error {
-	// TODO
+	var s string
+	err := json.Unmarshal(b, &s)
+	if err != nil {
+		return err
+	} 
+	s = strings.ToLower(s)
+	if s != "admin" && s != "user" {
+		return errors.New("Invalid role")
+	}
+	*r = Role(s)
 	return nil
 }
 
 func EncodeAPIUser(u APIUser) ([]byte, error) {
-	// TODO
-	return nil, nil
+	jsondata, err := json.Marshal(u)
+	return jsondata, err
 }
 
 func DecodeAPIUser(data []byte) (APIUser, error) {
-	// TODO
-	return APIUser{}, nil
+	var apiuser APIUser
+	err := json.Unmarshal(data, &apiuser)
+	if  err != nil {
+		return APIUser{}, err
+	}
+	return apiuser, nil
 }
 
 func Question77() {
-	// TODO
+	user1 := APIUser{
+		ID: 123456,
+		Name: "张三",
+		Password: "234567",
+		Role: "admin",
+	}
+	user2 := APIUser{
+		ID: 123456,
+		Name: "张三",
+		Password: "234567",
+		Role: "professer",
+	}
+	data, encerr := EncodeAPIUser(user1)
+	fmt.Println(string(data), encerr)
+	user3, decerr := DecodeAPIUser(data)
+	fmt.Println(user3, decerr)
+	data, encerr = EncodeAPIUser(user2)
+	fmt.Println(string(data), encerr)
+	user3, decerr = DecodeAPIUser(data)
+	fmt.Println(user3, decerr)
+	fmt.Println()
 }
 
 // ---------------------------------------------------------------------------
@@ -110,27 +203,34 @@ func Question77() {
 // 在 Question78 中：对同一段 []byte 分别走 Header 与 URL 路径，解码后 bytes.Equal 应为 true；
 // 并打印两种编码字符串，观察 '+' '/' 与 '-' '_' 的差异
 func TokenToHeader(raw []byte) string {
-	// TODO
-	return ""
+	return base64.StdEncoding.EncodeToString(raw)
 }
 
 func TokenFromHeader(s string) ([]byte, error) {
-	// TODO
-	return nil, nil
+	return base64.StdEncoding.DecodeString(s)
 }
 
 func TokenToURL(raw []byte) string {
-	// TODO
-	return ""
+	return base64.URLEncoding.EncodeToString(raw)
 }
 
 func TokenFromURL(s string) ([]byte, error) {
-	// TODO
-	return nil, nil
+	return base64.URLEncoding.DecodeString(s)
 }
 
 func Question78() {
-	// TODO
+	// token := []byte{12, 32, 23, 213, 23, 15}
+	token := []byte{0xff, 0xee, 0xdd, 0xcc, 0xbb, 0xaa}
+	normalencode := TokenToHeader(token)
+	fmt.Println(normalencode)
+	urlencode := TokenToURL(token)
+	fmt.Println(urlencode)
+
+	normaldecode, norerr := TokenFromHeader(normalencode)
+	urldecode, urlerr := TokenFromURL(urlencode)
+	fmt.Println(norerr, bytes.Equal(token, normaldecode))
+	fmt.Println(urlerr, bytes.Equal(token, urldecode))
+	fmt.Println()
 }
 
 // ---------------------------------------------------------------------------
@@ -143,17 +243,21 @@ func Question78() {
 // 写函数 CheckPassword(salt, password, wantHex string) bool：对比哈希是否一致
 // 在 Question79 中：同一盐密应 Check 成功；改密码应失败
 func HashPassword(salt, password string) string {
-	// TODO
-	return ""
+	sum := sha256.Sum256([]byte(salt + password))
+	return hex.EncodeToString(sum[:])
 }
 
 func CheckPassword(salt, password, wantHex string) bool {
-	// TODO
-	return false
+	return HashPassword(salt, password) == wantHex
 }
 
 func Question79() {
-	// TODO
+	salt := "ac13klj41"
+	want := HashPassword(salt, "123145312")
+	fmt.Println("hash:", want)
+	fmt.Println("同盐密:", CheckPassword(salt, "123145312", want))
+	fmt.Println("改密码:", CheckPassword(salt, "123456789", want))
+	fmt.Println()
 }
 
 // ---------------------------------------------------------------------------
@@ -170,36 +274,53 @@ func Question79() {
 //   - 解密时先拆出 nonce 再 Open
 // 在 Question80 中：加密 "db-password-demo"，再解密打印；key 可用 32 字节常量（仅练习）
 func EncryptSecret(key, plaintext []byte) (nonceAndCipher []byte, err error) {
-	// TODO
-	return nil, nil
+	if len(key) != 16 && len(key) !=24 && len(key) != 32 {
+		return nil, errors.New("key length must be 16/24/32")
+	}
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return nil, err
+	}
+	nonce := make([]byte, gcm.NonceSize())
+	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
+		return nil, err
+	}
+	ciphertext := gcm.Seal(nil, nonce, plaintext, nil)
+	return append(nonce, ciphertext...), nil
 }
 
 func DecryptSecret(key, nonceAndCipher []byte) (plaintext []byte, err error) {
-	// TODO
-	return nil, nil
+	if len(key) != 16 && len(key) !=24 && len(key) != 32 {
+		return nil, errors.New("key length must be 16/24/32")
+	}
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return nil, err
+	}
+	ns := gcm.NonceSize()
+	if len(nonceAndCipher) < ns {
+		return nil, errors.New("ciphertext too short")
+	}
+	nonce, ciphertext := nonceAndCipher[:ns], nonceAndCipher[ns:]
+	return gcm.Open(nil, nonce, ciphertext, nil)
 }
 
 func Question80() {
-	// TODO
-}
-
-// ---------------------------------------------------------------------------
-// 81. encoding/csv（了解即可；xml 可在注释中对比一句）
-// 场景引申：把用户列表导出为 CSV，供运营下载
-//
-// 写函数 UsersToCSV(users []APIUser) (string, error)：
-//   - 表头：id,name,role
-//   - 不要输出 Password
-//   - 使用 encoding/csv.Writer 写到 strings.Builder 或 bytes.Buffer
-// 在 Question81 中打印 CSV 文本
-// 选做：用 encoding/xml 把同一个切片 Marshal 成 XML 打印，体会差异即可
-func UsersToCSV(users []APIUser) (string, error) {
-	// TODO
-	return "", nil
-}
-
-func Question81() {
-	// TODO
+	key := []byte("skocndlxdhnxlslpfjaljfl131124321")
+	plain := []byte("db-password-demo")
+	packed, err := EncryptSecret(key, plain)
+	fmt.Println(string(packed), err)
+	out, err := DecryptSecret(key, packed)
+	fmt.Println(string(out), err)
+	fmt.Println()
 }
 
 // ---------------------------------------------------------------------------
@@ -214,18 +335,32 @@ func Question81() {
 //     - 用 maps 或手动 map 去重
 //     - 用 slices.Sort 排序后返回
 // 在 Question82 中演示合法/非法手机号，以及标签规范化前后对比
+
 func ValidCNMobile(s string) bool {
-	// TODO
-	return false
+	return regexp.MustCompile(`^1\d{10}$`).MatchString(s)
 }
 
 func NormalizeTags(tags []string) []string {
-	// TODO
-	return nil
+	seen := make(map[string]struct{})
+	for _, t := range tags {
+		t = strings.TrimSpace(t)
+		if t == "" {
+			continue
+		}
+		seen[t] = struct{}{}
+	}
+	out := slices.Collect(maps.Keys(seen))
+	slices.Sort(out)
+	return out
 }
 
 func Question82() {
-	// TODO
+	fmt.Println("14739619295:", ValidCNMobile("14739619295"))
+	fmt.Println("12345:", ValidCNMobile("12345"))
+	raw := []string{" go ", "web", "go", "", "api", "web"}
+	fmt.Println("去重前:", raw)
+	fmt.Println("去重后:", NormalizeTags(raw))
+	fmt.Println()
 }
 
 // ---------------------------------------------------------------------------
@@ -238,12 +373,21 @@ func Question82() {
 //   - Parse(args)，返回解析结果
 // 在 Question83 中分别传入 []string{"-config", "app.json", "-verbose"} 与空参数并打印
 func RunFlagDemo(args []string) (configPath string, verbose bool, err error) {
-	// TODO
-	return "", false, nil
+	fs := flag.NewFlagSet("ops", flag.ContinueOnError)
+	cfg := fs.String("config", "config.json", "path to config file")
+	verb := fs.Bool("verbose", false, "verbose log")
+	if err := fs.Parse(args); err != nil {
+		return "", false, err
+	}
+	return *cfg, *verb, nil
 }
 
 func Question83() {
-	// TODO
+	c1, v1, err1 := RunFlagDemo([]string{"-config", "app.json", "-verbose"})
+	fmt.Printf("有参数: config=%s verbose=%v err=%v\n", c1, v1, err1)
+	c2, v2, err2 := RunFlagDemo(nil)
+	fmt.Printf("空参数: config=%s verbose=%v err=%v\n", c2, v2, err2)
+	fmt.Println()
 }
 
 // ---------------------------------------------------------------------------
@@ -256,11 +400,25 @@ func Question83() {
 //   - 可先 slog.SetDefault(slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug})))
 // 在 Question84 中调用两次（verbose true/false）观察输出
 func LogDeploy(service, version string, verbose bool) {
-	// TODO
+	level := slog.LevelInfo
+	if verbose {
+		level = slog.LevelDebug
+	}
+	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: level}))
+	slog.SetDefault(logger)
+
+	slog.Info("deploy", "service", service, "version", version)
+	if verbose {
+		slog.Debug("deploy details", "service", service, "version", version)
+	}
 }
 
 func Question84() {
-	// TODO
+	fmt.Println("--- verbose=false ---")
+	LogDeploy("api", "v1.0.0", false)
+	fmt.Println("--- verbose=true ---")
+	LogDeploy("api", "v1.0.1", true)
+	fmt.Println()
 }
 
 // ---------------------------------------------------------------------------
@@ -278,16 +436,37 @@ func Question84() {
 //   1) timeout=1s 调用，应成功
 //   2) timeout=50ms 调用，应得到 context.DeadlineExceeded
 //   3) 用 context.WithValue 塞一个 request_id，在 SlowWork 或包装里读出并打印（练 WithValue 语义即可）
+type ctxKey string
+
+const requestIDKey ctxKey = "request_id"
+
 func ProcessWithTimeout(parent context.Context, d time.Duration, work func(ctx context.Context) error) error {
-	// TODO
-	return nil
+	ctx, cancel := context.WithTimeout(parent, d)
+	defer cancel()
+	return work(ctx)
 }
 
 func SlowWork(ctx context.Context) error {
-	// TODO
-	return nil
+	if id, ok := ctx.Value(requestIDKey).(string); ok {
+		fmt.Println("request_id:", id)
+	}
+	select {
+	case <-time.After(200 * time.Millisecond):
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
+	}
 }
 
 func Question85() {
-	// TODO
+	err1 := ProcessWithTimeout(context.Background(), time.Second, SlowWork)
+	fmt.Println("timeout=1s:", err1)
+
+	err2 := ProcessWithTimeout(context.Background(), 50*time.Millisecond, SlowWork)
+	fmt.Println("timeout=50ms:", err2)
+
+	ctx := context.WithValue(context.Background(), requestIDKey, "req-001")
+	err3 := ProcessWithTimeout(ctx, time.Second, SlowWork)
+	fmt.Println("with request_id:", err3)
+	fmt.Println()
 }

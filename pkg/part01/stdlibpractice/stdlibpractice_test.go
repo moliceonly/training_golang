@@ -10,7 +10,6 @@ func Test_all_question_stdlibpractice(t *testing.T) {
 	Question78()
 	Question79()
 	Question80()
-	Question81()
 	Question82()
 	Question83()
 	Question84()

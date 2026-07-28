@@ -12,7 +12,7 @@ training_golang/           # module: training_golang
 │   └── errorinterfacepractice/  # 1.2 错误与接口练习
 ├── pkg/part01/            # 练习包
 │   ├── …                  # 起点 / 1.1
-│   └── stdlibpractice/    # 1.4 标准库 SDK（题 75–85，仅题干）
+│   └── stdlibpractice/    # 1.4 标准库 SDK（题 75–80、82–85）
 └── test_internal/         # 独立 module，验证无法 import internal
 ```
 
@@ -23,7 +23,7 @@ training_golang/           # module: training_golang
 | **1.1** 类型与数据结构 | 完成 | `pkg/part01/structpointerpractice` 等 |
 | **1.2** 接口、错误与控制流 | 完成 | `internal/errorinterfacepractice` |
 | **1.3** 包 / module / 工程习惯 | 完成 | `cmd/` · `internal/` · `pkg/` · `test_internal/` |
-| **1.4** 标准库 SDK | 进行中 | `pkg/part01/stdlibpractice`（75–85） |
+| **1.4** 标准库 SDK | 进行中 | `pkg/part01/stdlibpractice`（75–80、82–85） |
 
 ## 各包简要说明
 
@@ -34,7 +34,7 @@ training_golang/           # module: training_golang
 | `pkg/part01/arrslicepractice` | 数组与切片（增删、遍历、扩容） |
 | `pkg/part01/functionmethodpractice` | 函数、可变参数、闭包、defer |
 | `pkg/part01/structpointerpractice` | 结构体/指针/接收者、深浅拷贝、JSON、标签 map、iota、匿名嵌入等 |
-| `pkg/part01/stdlibpractice` | **1.4**：文本库、time、JSON、Base64、SHA256、AES-GCM、CSV、regexp/slices、flag、slog、context |
+| `pkg/part01/stdlibpractice` | **1.4**：文本库、time、JSON、Base64、SHA256、AES-GCM、regexp/slices、flag、slog、context |
 | `internal/errorinterfacepractice` | error、接口、Is/As、断言、recover 等 |
 | `internal/calc` | `Add`、`Price` |
 | `cmd/demo` | 同 module 调用 `internal` |
@@ -50,7 +50,6 @@ training_golang/           # module: training_golang
 | 78 | encoding/base64 | 令牌进 Header / URL |
 | 79 | crypto/sha256 | 盐 + 密码摘要落库 |
 | 80 | crypto/aes + GCM | 配置密钥字段加解密 |
-| 81 | encoding/csv（+xml 选做） | 用户列表导出 |
 | 82 | regexp / sort / slices / maps | 手机号校验、标签规范化 |
 | 83 | flag | 运维工具启动参数 |
 | 84 | log/slog | 关键操作结构化日志 |
