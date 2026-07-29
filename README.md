@@ -23,7 +23,7 @@ training_golang/
 | 路线 | 状态 | 落在哪 |
 |------|------|--------|
 | 1.1–1.5 | 练习库已齐 | `pkg/part01/...` |
-| **2.1** 文件与本地 IO | 练习中 | `pkg/part02/fileiopractice` |
+| **2.1** 文件与本地 IO | 练习完 | `pkg/part02/fileiopractice` |
 | **2.2** HTTP 客户端与服务端 | 进行中 | `pkg/part02/httppractice`（102–108） |
 
 ## 2.2 题目与场景对照
