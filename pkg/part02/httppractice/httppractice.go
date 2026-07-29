@@ -13,6 +13,15 @@ import (
 	"context"
 	"net/http"
 	"time"
+	"fmt"
+	"net/http/httptest"
+	"encoding/json"
+	"sync"
+	"strings"
+	"strconv"
+	"os"
+	"path/filepath"
+	"net/url"
 )
 
 // ---------------------------------------------------------------------------
@@ -31,20 +40,42 @@ import (
 // 在 Question102 中用 httptest.NewRecorder + httptest.NewRequest 演示并打印
 func WritePlainOK(w http.ResponseWriter, body string) {
 	// TODO
+	w.Header().Set("Content-Type", "text/plain; charset=uft-8")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(body))
 }
 
 func SetSessionCookie(w http.ResponseWriter, sessionID string) {
 	// TODO
+	http.SetCookie(w, &http.Cookie{
+		Name: "sesstion_id",
+		Value: sessionID,
+		Path: "/",
+	})
 }
 
 func ReadMethodAndQuery(r *http.Request) (method, q string) {
 	// TODO
-	return "", ""
+	return r.Method, r.URL.Query().Get("q")
 }
 
 // Question102 演示方法、状态码、Header、Body、Cookie。
 func Question102() {
 	// TODO
+
+		req := httptest.NewRequest(http.MethodGet, "/hello?q=world", nil)
+		method, q := ReadMethodAndQuery(req)
+		fmt.Println("method:", method, "q:", q)
+
+		rr := httptest.NewRecorder()
+		WritePlainOK(rr, "ok")
+		SetSessionCookie(rr, "abc-123")
+
+		fmt.Println("status:", rr.Code)
+		fmt.Println("Content-Type:", rr.Header().Get("Content-Type"))
+		fmt.Println("body:", rr.Body.String())
+		fmt.Println("Set-Cookie:", rr.Header().Get("Set-Cookie"))
+		fmt.Println()
 }
 
 // ---------------------------------------------------------------------------
@@ -71,18 +102,98 @@ type Todo struct {
 	Done  bool   `json:"done"`
 }
 
+var (
+	todos []Todo
+	mutex sync.Mutex
+	todoid = 0
+)
+
 func WriteJSON(w http.ResponseWriter, status int, v any) {
 	// TODO
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	_ = json.NewEncoder(w).Encode(v)
 }
 
 func NewTodoMux() http.Handler {
 	// TODO: http.NewServeMux + HandleFunc
-	return http.NewServeMux()
+	servemux := http.NewServeMux()
+
+	servemux.HandleFunc("/todos", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+
+		case http.MethodGet:
+			mutex.Lock()
+			defer mutex.Unlock()
+			if idStr := r.URL.Query().Get("id"); idStr != "" {
+				id, err := strconv.Atoi(idStr)
+				if err != nil {
+					WriteJSON(w, http.StatusBadRequest, map[string]string{"error": "bad id"})
+					return
+				}
+				for _, t := range todos {
+					if t.ID == id {
+						WriteJSON(w, http.StatusOK, t)
+						return
+					}
+				}
+				WriteJSON(w, http.StatusNotFound, map[string]string{"error": "not found"})
+				return 
+			}
+			WriteJSON(w, http.StatusOK, todos)
+
+		case http.MethodPost:
+			var title struct {
+				Title string `json:"title"`
+			}
+			if err := json.NewDecoder(r.Body).Decode(&title); err != nil {
+				WriteJSON(w, http.StatusBadRequest, map[string]string{"error": "bad json"})
+				return
+			}
+			mutex.Lock()
+			defer mutex.Unlock()
+			newtodo := Todo{
+				ID: todoid,
+				Title: title.Title,
+				Done: false,
+			}
+			todoid++
+			todos = append(todos, newtodo)
+			WriteJSON(w, http.StatusOK, newtodo)
+		
+		default:
+			WriteJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "method"})
+		} 
+	})
+	return servemux
 }
 
 // Question103 演示备忘录 Todo JSON API（httptest）。
 func Question103() {
-	// TODO
+	h := NewTodoMux()
+
+	body := strings.NewReader(`{"title":"buy apple"}`)
+	req := httptest.NewRequest(http.MethodPost, "/todos", body)
+	rr := httptest.NewRecorder()
+	h.ServeHTTP(rr, req)
+	fmt.Println(req.Method, rr.Code, rr.Body.String())
+
+	body = strings.NewReader(`{"title":"buy banana"}`)
+	req = httptest.NewRequest(http.MethodPost, "/todos", body)
+	rr = httptest.NewRecorder()
+	h.ServeHTTP(rr, req)
+	fmt.Println(req.Method, rr.Code, rr.Body.String())
+
+	req = httptest.NewRequest(http.MethodGet, "/todos", nil)
+	rr = httptest.NewRecorder()
+	h.ServeHTTP(rr, req)
+	fmt.Println(req.Method, rr.Code, rr.Body.String())
+
+	req = httptest.NewRequest(http.MethodGet, "/todos?id=1", nil)
+	rr = httptest.NewRecorder()
+	h.ServeHTTP(rr, req)
+	fmt.Println(req.Method, rr.Code, rr.Body.String())
+	fmt.Println()
 }
 
 // ---------------------------------------------------------------------------
@@ -102,22 +213,55 @@ func Question103() {
 // 在 Question104 中：Chain(NewTodoMux(), WithRecover, WithLogging)，用 httptest 请求并制造一次 panic 路由（可选 HandleFunc /panic）
 func WithLogging(next http.Handler) http.Handler {
 	// TODO
-	return next
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request){
+		start := time.Now()
+		next.ServeHTTP(w, r)
+		fmt.Printf("%s %s %v\n", r.Method, r.URL.Path, time.Since(start))
+	})
 }
 
 func WithRecover(next http.Handler) http.Handler {
 	// TODO
-	return next
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request){
+		defer func() {
+			if rec := recover(); rec != nil {
+				WriteJSON(w, http.StatusInternalServerError, map[string]string{"error":"internal"})
+			}
+		}()
+		next.ServeHTTP(w, r)
+	})
 }
 
 func Chain(h http.Handler, mws ...func(http.Handler) http.Handler) http.Handler {
 	// TODO
+	for i := len(mws) - 1; i>= 0; i-- {
+		h = mws[i](h)
+	}
 	return h
 }
 
 // Question104 演示中间件链包裹 Todo API。
 func Question104() {
-	// TODO
+	
+	mux := http.NewServeMux()
+	inner := NewTodoMux()
+	mux.Handle("/", inner)
+	mux.HandleFunc("/panic", func(w http.ResponseWriter, r * http.Request) {
+		panic("panic")
+	})
+
+	h := Chain(mux, WithRecover, WithLogging)
+
+	req := httptest.NewRequest(http.MethodGet, "/todos", nil)
+	rr := httptest.NewRecorder()
+	h.ServeHTTP(rr, req)
+	fmt.Println("todos", rr.Code, rr.Body.String())
+
+	req = httptest.NewRequest(http.MethodGet, "/panic", nil)
+	rr = httptest.NewRecorder()
+	h.ServeHTTP(rr, req)
+	fmt.Println("panic:", rr.Code, rr.Body.String())
+	fmt.Println()
 }
 
 // ---------------------------------------------------------------------------
@@ -138,22 +282,77 @@ func Question104() {
 // 在 Question105 中：httptest 假天气服务 + 临时缓存文件演示；可再演示超时（服务端 Sleep > client Timeout）
 func NewTimeoutClient(d time.Duration) *http.Client {
 	// TODO
-	return http.DefaultClient
+	return &http.Client{Timeout: d}
 }
 
 func FetchWeather(ctx context.Context, client *http.Client, baseURL, city string) (summary string, err error) {
 	// TODO
-	return "", nil
+	u := baseURL + "/weather?city=" + url.QueryEscape(city)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
+	if err != nil {
+		return "", err
+	}
+
+	rr, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer rr.Body.Close()
+
+	var output struct {
+		City string `json:"city"`
+		Summary string `json:"summary"`
+	}
+	if err := json.NewDecoder(rr.Body).Decode(&output); err != nil {
+		return "", err
+	}
+	return output.Summary, nil
 }
 
 func FetchWeatherCached(ctx context.Context, client *http.Client, baseURL, city, cachePath string) (string, error) {
 	// TODO
-	return "", nil
+	if cache, err := os.ReadFile(cachePath); err == nil {
+		return string(cache), nil
+	}
+	summary, err := FetchWeather(ctx, client, baseURL, city)
+	if err != nil {
+		return "", nil
+	}
+	if err := os.WriteFile(cachePath, []byte(summary), 0o644); err != nil {
+		return "", nil
+	}
+	return summary, nil
 }
 
 // Question105 演示带超时的天气客户端与文件缓存。
 func Question105(tmpDir string) {
-	// TODO
+	
+	client := NewTimeoutClient(3 * time.Second)
+
+	serve := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_ = json.NewEncoder(w).Encode(map[string]string{
+			"city": "beijing",
+			"summary": "rainy",
+		})
+	}))
+	defer serve.Close()
+
+	ctx := context.Background()
+	cache := filepath.Join(tmpDir, "cache")
+
+	ser1, err := FetchWeatherCached(ctx, client, serve.URL, "beijing", cache)
+	fmt.Println(ser1, err)
+
+	ser2, err := FetchWeatherCached(ctx, client, serve.URL, "beijing", cache)
+	fmt.Println(ser2, err)
+
+	timeout := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(3 * time.Second)
+	}))
+	defer timeout.Close()
+	_, err = FetchWeather(ctx, client, timeout.URL, "beijing")
+	fmt.Println(err)
+	fmt.Println()
 }
 
 // ---------------------------------------------------------------------------
@@ -170,7 +369,24 @@ func Question105(tmpDir string) {
 // 在 Question106 中：httptest 前两次 500、第三次 200；以及短 timeout ctx 取消
 func GetWithRetry(ctx context.Context, client *http.Client, rawURL string, maxTries int) (status int, body []byte, err error) {
 	// TODO
-	return 0, nil, nil
+	count := 0
+	for {
+		if count >= 5 {
+			break
+		}
+
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, rawURL, nil)
+		if err != nil {
+			return 0, []byte{}, nil
+		}
+		rr, err := client.Do(req)
+		if err == nil {
+			return rr.Code(), rr.Body(), nil
+		}
+		count++
+	}
+
+	return 0, []byte{}, nil
 }
 
 // Question106 演示 context 取消与 GET 重试。
@@ -192,6 +408,7 @@ func Question106() {
 // 在 Question107 中用 httptest 打 OPTIONS 与一次 404 演示
 func WithCORS(next http.Handler) http.Handler {
 	// TODO
+	next.Header().Set("Access-Control-Allow-Origin","*")
 	return next
 }
 
