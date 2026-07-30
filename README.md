@@ -3,7 +3,7 @@
 对齐 `go-web-roadmap.html`。
 
 - **Part 01**：1.1–1.5 在 `pkg/part01/`
-- **Part 02**：2.1–2.3 已有练习；进行中 **2.4** MySQL + GORM（**统一用 apt 本机 MySQL，不用 Docker**）
+- **Part 02**：2.1–2.4 已有练习；进行中 **2.5** Redis（**统一用 apt 本机 Redis，不用 Docker**）
 
 ## 目录
 
@@ -14,7 +14,8 @@ training_golang/
 │   ├── fileiopractice/      # 2.1
 │   ├── httppractice/        # 2.2
 │   ├── protobufpractice/    # 2.3
-│   └── gormpractice/        # 2.4（114–121）
+│   ├── gormpractice/        # 2.4（114–121）
+│   └── redispractice/       # 2.5（122–128）
 └── test_internal/
 ```
 
@@ -24,7 +25,8 @@ training_golang/
 |------|------|--------|
 | 1.1–1.5 | 练习库已齐 | `pkg/part01/...` |
 | **2.1–2.3** | 练习中 | `pkg/part02/...` |
-| **2.4** MySQL + GORM | 进行中 | `pkg/part02/gormpractice`（114–121） |
+| **2.4** MySQL + GORM | 练习库已齐 | `pkg/part02/gormpractice`（114–121） |
+| **2.5** Redis | 进行中 | `pkg/part02/redispractice`（122–128） |
 
 ## 2.4 题目与场景对照
 
@@ -80,9 +82,52 @@ export GOPROXY=https://goproxy.cn,direct
 go get gorm.io/gorm gorm.io/driver/mysql
 ```
 
+## 2.5 题目与场景对照
+
+| 题 | 知识要点 | 贴近场景 |
+|----|----------|----------|
+| 122 | go-redis `NewClient`、Ping | 连上 Redis |
+| 123 | String / Hash / List / Set / ZSet | 五类命令各练一遍 |
+| 124 | TTL；穿透 / 击穿 / 雪崩笔记 | 过期与缓存问题 |
+| 125 | Cache-Aside + 主动失效 | 商品详情先缓存后 DB |
+| 126 | Token 存 Redis，退出 Del | 登录态立即失效 |
+| 127 | `SET NX EX` 分布式锁 | 加锁 / 校验 value 解锁 |
+| 128 | 固定窗口限流 | 按 IP，超限对应 429 |
+
+## Redis（apt 本机安装，训练统一方案）
+
+本仓库 **2.5 练习一律用 apt 安装的本机 Redis**，不使用 Docker 跑 Redis。
+
+| 项 | 值 |
+|----|-----|
+| 地址 | `127.0.0.1:6379` |
+| 覆盖 | 环境变量 `TRAINING_REDIS_ADDR` |
+| 跳过单测 | `TRAINING_SKIP_REDIS=1` |
+
+```bash
+# 安装与启动（Ubuntu / WSL）
+sudo apt update
+sudo apt install -y redis-server
+sudo service redis-server start   # 或: sudo systemctl start redis-server
+
+# 自检
+redis-cli ping   # 应返回 PONG
+```
+
+实现 Redis 代码时再装客户端：
+
+```bash
+export GOPROXY=https://goproxy.cn,direct
+go get github.com/redis/go-redis/v9
+```
+
 ## 常用命令
 
 ```bash
+# 2.5
+go test -v ./pkg/part02/redispractice/
+go doc training_golang/pkg/part02/redispractice.Question125
+
 # 2.4
 go test -v ./pkg/part02/gormpractice/
 go doc training_golang/pkg/part02/gormpractice.Question117
@@ -92,4 +137,4 @@ go generate ./pkg/part02/protobufpractice/
 go test -v ./pkg/part02/protobufpractice/
 ```
 
-实现完 2.4 后进入路线图 **2.5** Redis。
+实现完 2.5 后进入路线图 **2.6** 综合 IO 小项目。
