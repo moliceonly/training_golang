@@ -11,17 +11,18 @@ package httppractice
 
 import (
 	"context"
-	"net/http"
-	"time"
-	"fmt"
-	"net/http/httptest"
 	"encoding/json"
-	"sync"
-	"strings"
-	"strconv"
+	"fmt"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
 	"os"
 	"path/filepath"
-	"net/url"
+	"strconv"
+	"strings"
+	"sync"
+	"time"
 )
 
 // ---------------------------------------------------------------------------
@@ -369,29 +370,82 @@ func Question105(tmpDir string) {
 // 在 Question106 中：httptest 前两次 500、第三次 200；以及短 timeout ctx 取消
 func GetWithRetry(ctx context.Context, client *http.Client, rawURL string, maxTries int) (status int, body []byte, err error) {
 	// TODO
-	count := 0
-	for {
-		if count >= 5 {
-			break
+	var lastErr error
+	for count := 0; count < maxTries; count++ {
+		if err := ctx.Err(); err != nil {
+			fmt.Println("try", count+1, "ctx:", err)
+			return 0, nil, err
 		}
 
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, rawURL, nil)
 		if err != nil {
-			return 0, []byte{}, nil
+			return 0, nil, err
 		}
-		rr, err := client.Do(req)
-		if err == nil {
-			return rr.Code(), rr.Body(), nil
-		}
-		count++
-	}
 
-	return 0, []byte{}, nil
+		rr, err := client.Do(req)
+		if err != nil {
+			lastErr = err
+			if ctx.Err() != nil {
+				fmt.Println("try", count+1, "do err:", err)
+				return 0, nil, ctx.Err()
+			}
+			time.Sleep(10 * time.Millisecond)
+			continue
+		}
+
+		b, err := io.ReadAll(rr.Body)
+		rr.Body.Close()
+		if err != nil {
+			lastErr = err
+			time.Sleep(10 * time.Millisecond)
+			fmt.Println("try", count+1, "status:", rr.StatusCode, "body:", string(b))
+			continue
+		}
+
+		if rr.StatusCode >= 500 {
+			lastErr = fmt.Errorf("status %d", rr.StatusCode)
+			if count == maxTries - 1 {
+				fmt.Println("try", count+1, "status:", rr.StatusCode, "body:", string(b))
+				return rr.StatusCode, b, lastErr
+			}
+			fmt.Println("try", count+1, "status:", rr.StatusCode, "body:", string(b))
+			time.Sleep(10 * time.Millisecond)
+			continue
+		}
+
+		return rr.StatusCode, b, nil
+	}
+	return 0, nil, lastErr
 }
 
 // Question106 演示 context 取消与 GET 重试。
 func Question106() {
-	// TODO
+	n := 0
+	serve := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		n++
+		if n < 3 {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("fail"))
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("ok"))
+	}))
+	defer serve.Close()
+
+	client := &http.Client{Timeout: 2 * time.Second}
+	st, body, err := GetWithRetry(context.Background(), client, serve.URL, 5)
+	fmt.Println(st, string(body), err)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Millisecond)
+	defer cancel()
+	slow := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(50 * time.Millisecond)
+	}))
+	defer slow.Close()
+	_, _, err = GetWithRetry(ctx, client, slow.URL, 5)
+	fmt.Println(err)
+	fmt.Println()
 }
 
 // ---------------------------------------------------------------------------
@@ -408,17 +462,44 @@ func Question106() {
 // 在 Question107 中用 httptest 打 OPTIONS 与一次 404 演示
 func WithCORS(next http.Handler) http.Handler {
 	// TODO
-	next.Header().Set("Access-Control-Allow-Origin","*")
-	return next
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }
 
 func WriteAPIError(w http.ResponseWriter, status int, msg string) {
 	// TODO
+	WriteJSON(w, status, map[string]string{"error": msg})
 }
 
 // Question107 演示 CORS 与错误状态码 JSON。
 func Question107() {
-	// TODO
+	mux := http.NewServeMux()
+
+	mux.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
+		WriteJSON(w, http.StatusOK, map[string]string{"ok": "true"})
+	})
+	
+	mux.HandleFunc("/missing", func(w http.ResponseWriter, r *http.Request) {
+		WriteAPIError(w, http.StatusNotFound, "not found")
+	})
+	h := WithCORS(mux)
+
+	req := httptest.NewRequest(http.MethodOptions, "/ping", nil)
+	rr := httptest.NewRecorder()
+	h.ServeHTTP(rr, req)
+	fmt.Println("OPTIONS:", rr.Code, rr.Header().Get("Access-Control-Allow-Origin"))
+
+	req = httptest.NewRequest(http.MethodGet, "/missing", nil)
+	rr = httptest.NewRecorder()
+	h.ServeHTTP(rr, req)
+	fmt.Println("404:", rr.Code, rr.Body.String())
+	fmt.Println()
 }
 
 // ---------------------------------------------------------------------------
@@ -437,14 +518,46 @@ func Question107() {
 // 在 Question108 中 httptest 请求 /users/42、/users/abc、/users/0
 func ParseUserID(path string) (id int, ok bool) {
 	// TODO
-	return 0, false
+	const prefix = "/users/"
+	if !strings.HasPrefix(path, prefix) {
+		return 0, false
+	}
+	rest := strings.TrimPrefix(path, prefix)
+	if rest == "" {
+		return 0, false
+	}
+	id, err := strconv.Atoi(rest)
+	if err != nil || id <= 0 {
+		return 0, false
+	}
+	return id, true
 }
 
 func UserDetailHandler(w http.ResponseWriter, r *http.Request) {
 	// TODO
+	if r.Method != http.MethodGet {
+		WriteAPIError(w, http.StatusMethodNotAllowed, "method")
+		return
+	}
+	id, ok := ParseUserID(r.URL.Path)
+	if !ok {
+		WriteAPIError(w, http.StatusBadRequest, "bad id")
+		return
+	}
+	WriteJSON(w, http.StatusOK, map[string]any{
+		"id":   id,
+		"name": fmt.Sprintf("user-%d", id),
+	})
 }
 
 // Question108 演示手写 /users/:id 路由。
 func Question108() {
-	// TODO
+	paths := []string{"/users/42", "/users/abc", "/users/0"}
+	for _, p := range paths {
+		req := httptest.NewRequest(http.MethodGet, p, nil)
+		rr := httptest.NewRecorder()
+		UserDetailHandler(rr, req)
+		fmt.Println(p, rr.Code, rr.Body.String())
+	}
+	fmt.Println()
 }
