@@ -1,0 +1,48 @@
+// 对齐路线图 Part 02 · 2.3「Protocol Buffers（proto3）」
+// 场景：用户信息报文 — id / name / balance，并覆盖 repeated / map / 枚举 / 嵌套
+//
+// 生成代码（在仓库根目录 training_golang/ 下执行）：
+//
+//	go generate ./pkg/part02/protobufpractice/...
+//
+// 或手动：
+//
+//	protoc --go_out=. --go_opt=module=training_golang \
+//	  pkg/part02/protobufpractice/proto/user.proto
+//
+syntax = "proto3";
+
+package userapi;
+
+option go_package = "training_golang/pkg/part02/protobufpractice/userpb";
+
+// ---------------------------------------------------------------------------
+// TODO(Q109)：理解并必要时改写下面定义
+// - message / 字段编号（= 后面的数字，不要随便改已发布编号）
+// - 标量：int64 / string
+// - enum：状态
+// - repeated：标签列表
+// - map：扩展元数据
+// - 嵌套 message：Address
+// ---------------------------------------------------------------------------
+
+enum UserStatus {
+  USER_STATUS_UNSPECIFIED = 0;
+  USER_STATUS_ACTIVE = 1;
+  USER_STATUS_FROZEN = 2;
+}
+
+message Address {
+  string city = 1;
+  string street = 2;
+}
+
+message User {
+  int64 id = 8;
+  string name = 2;
+  int64 balance = 3; // 余额，单位：分
+  UserStatus status = 4;
+  repeated string tags = 5;
+  map<string, string> metadata = 6;
+  Address address = 7;
+}
