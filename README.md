@@ -5,7 +5,6 @@
 - **Part 01**：语言基础与标准库直觉 → `pkg/part01/`
 - **Part 02**：文件 / HTTP / Protobuf / MySQL(GORM) / Redis / 短链综合 → `pkg/part02/`
 
-本机依赖约定：**MySQL / Redis 用 apt 本机服务，训练统一不用 Docker**。
 
 ## 目录
 
@@ -24,15 +23,15 @@ training_golang/
 
 ## 进度对照
 
-| 路线 | 状态 | 落在哪 |
-|------|------|--------|
-| **1.1–1.5** | 练习库已齐 | `pkg/part01/...` |
-| **2.1** 文件 IO | 练习库已齐 | `pkg/part02/fileiopractice` |
-| **2.2** HTTP | 练习库已齐 | `pkg/part02/httppractice` |
-| **2.3** Protobuf | 练习库已齐 | `pkg/part02/protobufpractice` |
-| **2.4** MySQL + GORM | 练习库已齐 | `pkg/part02/gormpractice`（114–121） |
-| **2.5** Redis | 练习库已齐 | `pkg/part02/redispractice`（122–128） |
-| **2.6** 综合短链 | 练习库已齐 | `pkg/part02/shortlinkpractice`（129–134） |
+| 路线　　　　　　　　 | 状态　　　 | 落在哪　　　　　　　　　　　　　　　　　　|
+| ----------------------| ------------| -------------------------------------------|
+| **1.1–1.5**　　　　　| 练习库已齐 | `pkg/part01/...`　　　　　　　　　　　　　|
+| **2.1** 文件 IO　　　| 练习库已齐 | `pkg/part02/fileiopractice`　　　　　　　 |
+| **2.2** HTTP　　　　 | 练习库已齐 | `pkg/part02/httppractice`　　　　　　　　 |
+| **2.3** Protobuf　　 | 练习库已齐 | `pkg/part02/protobufpractice`　　　　　　 |
+| **2.4** MySQL + GORM | 练习库已齐 | `pkg/part02/gormpractice`（114–121）　　　|
+| **2.5** Redis　　　　| 练习库已齐 | `pkg/part02/redispractice`（122–128）　　 |
+| **2.6** 综合短链　　 | 练习库已齐 | `pkg/part02/shortlinkpractice`（129–134） |
 
 ## 2.4 题目与场景对照
 
@@ -140,4 +139,3 @@ go doc training_golang/pkg/part02/shortlinkpractice.Question131
 go doc training_golang/pkg/part02/gormpractice.Question117
 ```
 
-指令速查笔记可参考仓库外的 `command.md`（若已同步到个人笔记目录）。
