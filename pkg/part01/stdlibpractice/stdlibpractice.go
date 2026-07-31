@@ -53,9 +53,9 @@ func SanitizeProfile(rawName string, ageStr string) (name string, age int, err e
 		}
 	}
 
-	age, ageerr := strconv.Atoi(ageStr)
-	fmt.Errorf("invalid age: %w", ageerr)
-	err = errors.Join(err, ageerr)
+	age, ageErr := strconv.Atoi(ageStr)
+	fmt.Errorf("invalid age: %w", ageErr)
+	err = errors.Join(err, ageErr)
 
 	NAME := bytes.ToUpper([]byte(rawName))
 	name = string(NAME)
@@ -83,16 +83,16 @@ func Question75() {
 // 在 Question76 中打印 remain 与 localStr；可用 time.NewTimer 演示「剩不到 1s 就等一下」的直觉（可选）
 func DeadlineInLocation(deadlineUTC string, locName string) (remain time.Duration, localStr string, err error) {
 	
-	deadline, parseerr := time.Parse(time.RFC3339, deadlineUTC)
+	deadline, parseErr := time.Parse(time.RFC3339, deadlineUTC)
 
-	loc, loadlocerr := time.LoadLocation(locName)
+	loc, loadLocErr := time.LoadLocation(locName)
 
 	local := deadline.In(loc)
 	localStr = local.Format("2006-01-02 15:04:05 MST")
 
 	remain = local.Sub(time.Now())
 
-	err = errors.Join(parseerr, loadlocerr)
+	err = errors.Join(parseErr, loadLocErr)
 
 	return remain, localStr, err
 }
@@ -154,17 +154,17 @@ func (r *Role) UnmarshalJSON(b []byte) error {
 }
 
 func EncodeAPIUser(u APIUser) ([]byte, error) {
-	jsondata, err := json.Marshal(u)
-	return jsondata, err
+	jsonData, err := json.Marshal(u)
+	return jsonData, err
 }
 
 func DecodeAPIUser(data []byte) (APIUser, error) {
-	var apiuser APIUser
-	err := json.Unmarshal(data, &apiuser)
+	var apiUser APIUser
+	err := json.Unmarshal(data, &apiUser)
 	if  err != nil {
 		return APIUser{}, err
 	}
-	return apiuser, nil
+	return apiUser, nil
 }
 
 func Question77() {
@@ -180,14 +180,14 @@ func Question77() {
 		Password: "234567",
 		Role: "professer",
 	}
-	data, encerr := EncodeAPIUser(user1)
-	fmt.Println(string(data), encerr)
-	user3, decerr := DecodeAPIUser(data)
-	fmt.Println(user3, decerr)
-	data, encerr = EncodeAPIUser(user2)
-	fmt.Println(string(data), encerr)
-	user3, decerr = DecodeAPIUser(data)
-	fmt.Println(user3, decerr)
+	data, encErr := EncodeAPIUser(user1)
+	fmt.Println(string(data), encErr)
+	user3, decErr := DecodeAPIUser(data)
+	fmt.Println(user3, decErr)
+	data, encErr = EncodeAPIUser(user2)
+	fmt.Println(string(data), encErr)
+	user3, decErr = DecodeAPIUser(data)
+	fmt.Println(user3, decErr)
 	fmt.Println()
 }
 
@@ -221,15 +221,15 @@ func TokenFromURL(s string) ([]byte, error) {
 func Question78() {
 	// token := []byte{12, 32, 23, 213, 23, 15}
 	token := []byte{0xff, 0xee, 0xdd, 0xcc, 0xbb, 0xaa}
-	normalencode := TokenToHeader(token)
-	fmt.Println(normalencode)
-	urlencode := TokenToURL(token)
-	fmt.Println(urlencode)
+	normalEncode := TokenToHeader(token)
+	fmt.Println(normalEncode)
+	urlEncode := TokenToURL(token)
+	fmt.Println(urlEncode)
 
-	normaldecode, norerr := TokenFromHeader(normalencode)
-	urldecode, urlerr := TokenFromURL(urlencode)
-	fmt.Println(norerr, bytes.Equal(token, normaldecode))
-	fmt.Println(urlerr, bytes.Equal(token, urldecode))
+	normalDecode, norErr := TokenFromHeader(normalEncode)
+	urlDecode, urlErr := TokenFromURL(urlEncode)
+	fmt.Println(norErr, bytes.Equal(token, normalDecode))
+	fmt.Println(urlErr, bytes.Equal(token, urlDecode))
 	fmt.Println()
 }
 

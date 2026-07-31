@@ -125,22 +125,22 @@ func SwapUserAge(a, b *User) {
 	a.Age, b.Age = b.Age, a.Age
 }
 func Question47() {
-	persona := User{
+	personA := User{
 		ID:   222510,
 		Name: "小明",
 		Age:  23,
 	}
-	personb := User{
+	personB := User{
 		ID:   222321,
 		Name: "小象",
 		Age:  12,
 	}
-	fmt.Println(persona)
-	fmt.Println(personb)
-	SwapUserAge(&persona, &personb)
+	fmt.Println(personA)
+	fmt.Println(personB)
+	SwapUserAge(&personA, &personB)
 	fmt.Printf("交换年龄后: \n")
-	fmt.Println(persona)
-	fmt.Println(personb)
+	fmt.Println(personA)
+	fmt.Println(personB)
 	fmt.Println()
 }
 
@@ -195,12 +195,12 @@ func (account *Account) Withdraw(amount int) bool {
 	}
 }
 func Question49() {
-	paccount := Account{Balance: 200}
-	fmt.Println(paccount)
-	paccount.Deposit(100)
-	paccount.Deposit(225)
-	paccount.Withdraw(355)
-	paccount.Withdraw(1000)
+	pAccount := Account{Balance: 200}
+	fmt.Println(pAccount)
+	pAccount.Deposit(100)
+	pAccount.Deposit(225)
+	pAccount.Withdraw(355)
+	pAccount.Withdraw(1000)
 }
 
 // 50.写函数 Describe(u *User)：若 u == nil 打印 "nil user"，否则打印 u.String()
@@ -214,15 +214,15 @@ func Describe(u *User) string {
 	}
 }
 func Question50() {
-	var persona User
-	personb := User{
+	var personA User
+	personB := User{
 		ID:   222510,
 		Name: "小明",
 		Age:  23,
 	}
 	fmt.Println(Describe(nil))
-	fmt.Println(Describe(&persona))
-	fmt.Println(Describe(&personb))
+	fmt.Println(Describe(&personA))
+	fmt.Println(Describe(&personB))
 	fmt.Println()
 }
 
@@ -236,10 +236,10 @@ func (account Account) DepositByValue(amount int) {
 	fmt.Printf("尝试存款%d元\n", amount)
 }
 func Question51() {
-	paccount := Account{Balance: 100}
-	fmt.Println(paccount)
-	paccount.DepositByValue(100)
-	fmt.Println(paccount)
+	pAccount := Account{Balance: 100}
+	fmt.Println(pAccount)
+	pAccount.DepositByValue(100)
+	fmt.Println(pAccount)
 	fmt.Println()
 }
 
@@ -277,22 +277,22 @@ func Question52() {
 //	要求：拷贝后修改新对象的 Items 元素，不得影响原对象
 //	在 Question53 中演示对比浅拷贝与深拷贝的差异
 func DeepCopyBill(b Bill) Bill {
-	copiedbill := Bill{
+	copiedBill := Bill{
 		Owner: b.Owner,
 		Items: make([]int, len(b.Items), cap(b.Items)),
 	}
-	copy(copiedbill.Items, b.Items)
-	return copiedbill
+	copy(copiedBill.Items, b.Items)
+	return copiedBill
 }
 func Question53() {
 	bill := Bill{
 		Owner: "小明",
 		Items: []int{23, 421, 21, 48},
 	}
-	copybill := DeepCopyBill(bill)
-	copybill.Items[1] = 1111
+	copyBill := DeepCopyBill(bill)
+	copyBill.Items[1] = 1111
 	fmt.Println(bill)
-	fmt.Println(copybill)
+	fmt.Println(copyBill)
 	fmt.Println()
 	//引用类型切忌用=拷贝
 }
@@ -320,12 +320,12 @@ func Question54() {
 			Street: "北京路1号",
 		},
 	}
-	jsondata, err := json.Marshal(profile)
+	jsonData, err := json.Marshal(profile)
 	fmt.Println(err)
-	fmt.Println(string(jsondata))
-	var profiledata Profile
-	json.Unmarshal(jsondata, &profiledata)
-	fmt.Println(profiledata)
+	fmt.Println(string(jsonData))
+	var profileData Profile
+	json.Unmarshal(jsonData, &profileData)
+	fmt.Println(profileData)
 	fmt.Println()
 }
 
@@ -384,16 +384,16 @@ const (
 	OrderDone
 )
 
-func (orderstatus OrderStatus) String() string {
-	switch orderstatus {
+func (orderStatus OrderStatus) String() string {
+	switch orderStatus {
 	case OrderPending:
-		return fmt.Sprintf("OrderPending: %d", orderstatus)
+		return fmt.Sprintf("OrderPending: %d", orderStatus)
 	case OrderPaid:
-		return fmt.Sprintf("OrderPaid: %d", orderstatus)
+		return fmt.Sprintf("OrderPaid: %d", orderStatus)
 	case OrderShipped:
-		return fmt.Sprintf("OrderShipped: %d", orderstatus)
+		return fmt.Sprintf("OrderShipped: %d", orderStatus)
 	case OrderDone:
-		return fmt.Sprintf("OrderDone: %d", orderstatus)
+		return fmt.Sprintf("OrderDone: %d", orderStatus)
 	default:
 		return ""
 	}

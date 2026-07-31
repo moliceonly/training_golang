@@ -76,14 +76,14 @@ func OpenDB(dsn string) (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	sqldb, err := db.DB()
+	sqlDB, err := db.DB()
 	if err != nil {
 		return nil, err
 	}
-	sqldb.SetMaxOpenConns(10)
-	sqldb.SetMaxIdleConns(5)
-	sqldb.SetConnMaxLifetime(time.Hour)
-	if err := sqldb.Ping(); err != nil {
+	sqlDB.SetMaxOpenConns(10)
+	sqlDB.SetMaxIdleConns(5)
+	sqlDB.SetConnMaxLifetime(time.Hour)
+	if err := sqlDB.Ping(); err != nil {
 		return nil, err
 	}
 	return db, nil
@@ -320,14 +320,14 @@ func BorrowBookTx(db *gorm.DB, bookID, readerID uint) error {
 			return err 
 		}
 
-		borrowrecord := &BorrowRecord{
+		borrowRecord := &BorrowRecord{
 			BookID: bookID,
 			ReaderID: readerID,
 			BorrowedAt: time.Now(),
 			Returned: false,
 		}
 
-		if err := tx.Create(borrowrecord).Error; err != nil {
+		if err := tx.Create(borrowRecord).Error; err != nil {
 			return err
 		}
 		return nil
@@ -626,6 +626,13 @@ func ExplainBookByISBN(db *gorm.DB, isbn string) (plan string, err error) {
 		out += "\n"
 	}
 	return out, rows.Err()
+}
+
+func SafetyNotes() string {
+	return `1. 用 ? 占位符传参，不要把用户输入拼进 SQL（防注入）
+2. 慢查询看 slow_query_log / EXPLAIN，确认是否走索引（如 isbn）
+3. 关联用 Preload/Joins，避免循环里逐条查造成 N+1
+4. AutoMigrate 适合练习/开发；生产用版本化迁移，先审再上`
 }
 
 // Question121 演示 EXPLAIN。

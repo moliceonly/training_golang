@@ -28,13 +28,13 @@ func EnsureDir(path string) error {
 func WriteHelloFile(dir, name string) (fullPath string, err error) {
 	// TODO: filepath.Join + os.Create 写 "hello\n"，defer Close
 	fullPath = filepath.Join(dir, name)
-	file, cferr := os.Create(fullPath)
-	if cferr != nil {
-		return "", cferr
+	file, createErr := os.Create(fullPath)
+	if createErr != nil {
+		return "", createErr
 	}
 	defer file.Close()
-	_, werr := file.WriteString("hello\n")
-	err = errors.Join(cferr, werr)
+	_, writeErr := file.WriteString("hello\n")
+	err = errors.Join(createErr, writeErr)
 	return fullPath, err
 }
 
@@ -96,12 +96,12 @@ func Question95(tmpDir string) {
 
 func CopyFile(dst, src string) (written int64, err error) {
 	// TODO: Open/Create + io.Copy，defer Close
-	copyfile, _ := os.Create(dst)
-	srcfile, err := os.Open(src)
+	copyFile, _ := os.Create(dst)
+	srcFile, err := os.Open(src)
 	if err != nil {
 		return 0, errors.New("source file not exists")
 	}
-	return io.Copy(copyfile, srcfile)
+	return io.Copy(copyFile, srcFile)
 }
 
 func CountBytes(r io.Reader) (n int64, err error) {
@@ -115,24 +115,24 @@ func CountBytes(r io.Reader) (n int64, err error) {
 func Question96(tmpDir string) {
 	_ = EnsureDir(tmpDir)
 	full, _ := WriteHelloFile(tmpDir, "a.txt")
-	copyfilepath := filepath.Join(tmpDir, "b.txt")
-	writtennum, err := CopyFile(copyfilepath, full)
-	fmt.Println(writtennum, err)
-	copyfile, _ := os.Open(copyfilepath)
-	defer copyfile.Close()
-	copyfilewc, err := CountBytes(copyfile)
-	fmt.Println(copyfilewc, err)
+	copyFilePath := filepath.Join(tmpDir, "b.txt")
+	writtenNum, err := CopyFile(copyFilePath, full)
+	fmt.Println(writtenNum, err)
+	copyFile, _ := os.Open(copyFilePath)
+	defer copyFile.Close()
+	copyFileWC, err := CountBytes(copyFile)
+	fmt.Println(copyFileWC, err)
 	fmt.Println()
 }
 
 func WriteLines(path string, lines []string) error {
 	// TODO: bufio.NewWriter 按行写并 Flush
-	writtenfile, err := os.OpenFile(path, os.O_WRONLY|os.O_APPEND, 0o644)
+	writtenFile, err := os.OpenFile(path, os.O_WRONLY|os.O_APPEND, 0o644)
 	if err != nil {
 		return err
 	}
-	defer writtenfile.Close()
-	bw := bufio.NewWriter(writtenfile)
+	defer writtenFile.Close()
+	bw := bufio.NewWriter(writtenFile)
 	for _, s := range lines {
 		bw.WriteString(s)
 	} 
@@ -144,20 +144,20 @@ func WriteLines(path string, lines []string) error {
 
 func ReadLines(path string) ([]string, error) {
 	// TODO: bufio.Scanner 按行读
-	readlines := []string{}
-	readfile, err := os.Open(path)
+	readLines := []string{}
+	readFile, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}
-	defer readfile.Close()
-	ns := bufio.NewScanner(readfile)
+	defer readFile.Close()
+	ns := bufio.NewScanner(readFile)
 	for ns.Scan(){
-		readlines = append(readlines, ns.Text())
+		readLines = append(readLines, ns.Text())
 	}
 	if err := ns.Err(); err != nil {
 		return nil, err
 	}
-	return readlines, nil
+	return readLines, nil
 }
 
 // Question97 练习 bufio：按行读、缓冲写（访问日志一行一条）。
@@ -168,28 +168,28 @@ func Question97(tmpDir string) {
 	 "实现 WriteLines / ReadLines；本函数写入若干行再读回打印。",
 	 "// TODO: bufio.Scanner 按行读",
 	}
-	filepath := filepath.Join(tmpDir, "b.txt")
-	fmt.Println(WriteLines(filepath, lines))
-	readlines, err := ReadLines(filepath)
-	fmt.Println(readlines, err)
+	filePath := filepath.Join(tmpDir, "b.txt")
+	fmt.Println(WriteLines(filePath, lines))
+	readLines, err := ReadLines(filePath)
+	fmt.Println(readLines, err)
 	fmt.Println()
 }
 
 func ImportProductsCSV(path string, handle func(id, name string) error) (rows int, err error) {
 	// TODO: Open+Scanner 流式读；跳过表头；Split 后调 handle。禁止 ReadFile 整文件
-	readfile, err := os.Open(path)
+	readFile, err := os.Open(path)
 	if err != nil {
 		return 0, nil
 	}
-	defer readfile.Close()
+	defer readFile.Close()
 
-	ns := bufio.NewScanner(readfile)
+	ns := bufio.NewScanner(readFile)
 	for ns.Scan() {
-		splitem := strings.SplitN(ns.Text(), ",", 2)
-		if len(splitem) < 2 {
+		parts := strings.SplitN(ns.Text(), ",", 2)
+		if len(parts) < 2 {
 			continue
 		}
-		if err := handle(splitem[0], splitem[1]); err != nil {
+		if err := handle(parts[0], parts[1]); err != nil {
 			return rows, err
 		}
 		rows++
@@ -200,13 +200,13 @@ func ImportProductsCSV(path string, handle func(id, name string) error) (rows in
 func GenerateDemoCSV(path string, n int) error {
 	// TODO: 流式写表头 + n 行 "i,product-i"
 
-	writefile, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o644)
+	writeFile, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o644)
 	if err != nil {
 		return err
 	}
-	defer writefile.Close()
+	defer writeFile.Close()
 
-	bw := bufio.NewWriter(writefile)
+	bw := bufio.NewWriter(writeFile)
 	bw.WriteString("id,name\n")
 	for i := 0; i < n; i++ {
 		fmt.Fprintf(bw, "%d,product-%d\n", i, i)
@@ -219,9 +219,9 @@ func GenerateDemoCSV(path string, n int) error {
 // 场景：商品 CSV（练习可用 1000 行代替 10 万行）。
 // 实现 GenerateDemoCSV、ImportProductsCSV；本函数生成后导入并打印行数。
 func Question98(tmpDir string) {
-	mkfile := filepath.Join(tmpDir, "test.csv")
-	fmt.Println(GenerateDemoCSV(mkfile, 100000))
-	rows, err := ImportProductsCSV(mkfile, func(id, name string) error {
+	mkFile := filepath.Join(tmpDir, "test.csv")
+	fmt.Println(GenerateDemoCSV(mkFile, 100000))
+	rows, err := ImportProductsCSV(mkFile, func(id, name string) error {
 		fmt.Println(id, name)
 		return nil
 	}) 
@@ -343,15 +343,15 @@ func Question100(tmpDir string) {
 
 func WriteTempAndRead(content string) (read string, err error) {
 	// TODO: CreateTemp；defer Remove；注意 Close 错误与命名返回值
-	tmpfile, err := os.CreateTemp("", "Test-*.txt")
+	tmpFile, err := os.CreateTemp("", "Test-*.txt")
 	if err != nil {
 		return "", nil
 	}
-	name := tmpfile.Name()
+	name := tmpFile.Name()
 	defer os.Remove(name)
 
-	tmpfile.Write([]byte(content))
-	if err = tmpfile.Close(); err != nil {
+	tmpFile.Write([]byte(content))
+	if err = tmpFile.Close(); err != nil {
 		return "", err
 	}
 

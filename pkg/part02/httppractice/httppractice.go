@@ -106,7 +106,7 @@ type Todo struct {
 var (
 	todos []Todo
 	mutex sync.Mutex
-	todoid = 0
+	todoID = 0
 )
 
 func WriteJSON(w http.ResponseWriter, status int, v any) {
@@ -118,9 +118,9 @@ func WriteJSON(w http.ResponseWriter, status int, v any) {
 
 func NewTodoMux() http.Handler {
 	// TODO: http.NewServeMux + HandleFunc
-	servemux := http.NewServeMux()
+	serveMux := http.NewServeMux()
 
-	servemux.HandleFunc("/todos", func(w http.ResponseWriter, r *http.Request) {
+	serveMux.HandleFunc("/todos", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 
 		case http.MethodGet:
@@ -153,20 +153,20 @@ func NewTodoMux() http.Handler {
 			}
 			mutex.Lock()
 			defer mutex.Unlock()
-			newtodo := Todo{
-				ID: todoid,
+			newTodo := Todo{
+				ID: todoID,
 				Title: title.Title,
 				Done: false,
 			}
-			todoid++
-			todos = append(todos, newtodo)
-			WriteJSON(w, http.StatusOK, newtodo)
+			todoID++
+			todos = append(todos, newTodo)
+			WriteJSON(w, http.StatusOK, newTodo)
 		
 		default:
 			WriteJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "method"})
 		} 
 	})
-	return servemux
+	return serveMux
 }
 
 // Question103 演示备忘录 Todo JSON API（httptest）。

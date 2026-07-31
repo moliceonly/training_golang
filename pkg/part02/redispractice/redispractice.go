@@ -45,12 +45,12 @@ func addrFromEnv() string {
 // 在 Question122 中：OpenRedis(addrFromEnv())，成功打印 "redis ok"，失败打印 err
 func OpenRedis(addr string) (*redis.Client, error) {
 	// TODO
-	rclient := redis.NewClient(&redis.Options{Addr: addr})
+	rClient := redis.NewClient(&redis.Options{Addr: addr})
 	ctx := context.Background()
-	if err := rclient.Ping(ctx).Err(); err != nil {
+	if err := rClient.Ping(ctx).Err(); err != nil {
 		return nil, err
 	}
-	return rclient, nil
+	return rClient, nil
 }
 
 // Question122 演示 Redis 连接。
@@ -81,55 +81,55 @@ func Question122() {
 func DemoRedisTypes(ctx context.Context, rdb *redis.Client, prefix string) error {
 	// TODO
 
-	strkey := prefix + ":str"
-	if err := rdb.Set(ctx, strkey, "Hello", 0).Err(); err != nil {
+	strKey := prefix + ":str"
+	if err := rdb.Set(ctx, strKey, "Hello", 0).Err(); err != nil {
 		return err
 	}
-	s, err := rdb.Get(ctx, strkey).Result()
+	s, err := rdb.Get(ctx, strKey).Result()
 	if err != nil {
 		return err
 	}
 	fmt.Println(s)
 
-	hashkey := prefix + ":hash"
-	if err := rdb.HSet(ctx, hashkey, "name", "world").Err(); err != nil {
+	hashKey := prefix + ":hash"
+	if err := rdb.HSet(ctx, hashKey, "name", "world").Err(); err != nil {
 		return err
 	}
-	h, err := rdb.HGet(ctx, hashkey, "name").Result()
+	h, err := rdb.HGet(ctx, hashKey, "name").Result()
 	if err != nil {
 		return err
 	}
 	fmt.Println(h)
 
-	listkey := prefix + ":list"
-	if err := rdb.LPush(ctx, listkey, "list", "world").Err(); err != nil {
+	listKey := prefix + ":list"
+	if err := rdb.LPush(ctx, listKey, "list", "world").Err(); err != nil {
 		return err
 	}
-	list, err := rdb.LRange(ctx, listkey, 0, 2).Result()
+	list, err := rdb.LRange(ctx, listKey, 0, 2).Result()
 	if err != nil {
 		return err
 	}
 	fmt.Println(list)
 
-	setkey := prefix + ":set"
-	if err := rdb.SAdd(ctx, setkey, "set", "world").Err(); err != nil {
+	setKey := prefix + ":set"
+	if err := rdb.SAdd(ctx, setKey, "set", "world").Err(); err != nil {
 		return err
 	}
-	set, err := rdb.SMembers(ctx, setkey).Result()
+	set, err := rdb.SMembers(ctx, setKey).Result()
 	if err != nil {
 		return err
 	}
 	fmt.Println(set)
 
-	zsetkey := prefix + ":zset"
-	if err := rdb.ZAdd(ctx, zsetkey, 
+	zsetKey := prefix + ":zset"
+	if err := rdb.ZAdd(ctx, zsetKey, 
 		redis.Z{Score: 12.23, Member: "小明"},
 		redis.Z{Score: 100.1, Member: "肖华"},
 		redis.Z{Score: 82.3, Member: "小二"},
 	).Err(); err != nil {
 		return err
 	}
-	zset, err := rdb.ZRangeWithScores(ctx, zsetkey, 0, -1).Result()
+	zset, err := rdb.ZRangeWithScores(ctx, zsetKey, 0, -1).Result()
 	if err != nil {
 		return err
 	}
@@ -542,9 +542,9 @@ func AllowIP(ctx context.Context, rdb *redis.Client, ip string, limit int, windo
 		return false, errors.New("Invalid ttl")
 	}
 	now := time.Now().Unix()
-	windowstart := now - (now % ttl)
+	windowStart := now - (now % ttl)
 
-	key := rateKey(ip, windowstart)
+	key := rateKey(ip, windowStart)
 	count, err := rdb.Incr(ctx, key).Result()
 	if err != nil {
 		return false, err

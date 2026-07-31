@@ -16,9 +16,9 @@ func Question21() {
 func Question22() {
 	arr := [10]int{23, 15, 24, 431, 432, 56, 1234, 123, 90, 87}
 	fmt.Printf("原数组为%v: \n", arr)
-	arr_length := len(arr)
-	for i := 0; i < arr_length-i-1; i++ {
-		arr[i], arr[arr_length-i-1] = arr[arr_length-i-1], arr[i]
+	arrLength := len(arr)
+	for i := 0; i < arrLength-i-1; i++ {
+		arr[i], arr[arrLength-i-1] = arr[arrLength-i-1], arr[i]
 	}
 	fmt.Printf("反转后数组为%v\n", arr)
 }
@@ -76,15 +76,15 @@ func Question26(slice []int) {
 func Question27() {
 	slice := []int{1, 2, 2, 3, 3, 3, 4, 4, 4, 4}
 	fmt.Printf("原切片为%v\n", slice)
-	unival := make(map[int]bool)
-	var newslice []int
+	uniqVal := make(map[int]bool)
+	var newSlice []int
 	for _, val := range slice {
-		if !unival[val] {
-			unival[val] = true
-			newslice = append(newslice, val)
+		if !uniqVal[val] {
+			uniqVal[val] = true
+			newSlice = append(newSlice, val)
 		}
 	}
-	fmt.Printf("去重切片为%v\n", newslice)
+	fmt.Printf("去重切片为%v\n", newSlice)
 }
 
 // 定义一个 3x3 的二维数组，计算主对角线元素之和
@@ -116,11 +116,11 @@ func Question29(slice []int) {
 // 过滤出切片中所有偶数，返回新切片
 func Question30(slice []int) {
 	fmt.Printf("原数组为%v", slice)
-	newslice := make([]int, 0, 0)
+	newSlice := make([]int, 0, 0)
 	for _, val := range slice {
 		if val%2 == 0 {
-			newslice = append(newslice, val)
+			newSlice = append(newSlice, val)
 		}
 	}
-	fmt.Printf("切片中所有偶数有%v\n", newslice)
+	fmt.Printf("切片中所有偶数有%v\n", newSlice)
 }

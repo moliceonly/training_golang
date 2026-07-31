@@ -3,7 +3,7 @@
 对齐 `go-web-roadmap.html`。
 
 - **Part 01**：1.1–1.5 在 `pkg/part01/`
-- **Part 02**：2.1–2.4 已有练习；进行中 **2.5** Redis（**统一用 apt 本机 Redis，不用 Docker**）
+- **Part 02**：2.1–2.5 已有练习；进行中 **2.6** 综合短链小项目（本机 apt MySQL + Redis）
 
 ## 目录
 
@@ -15,18 +15,20 @@ training_golang/
 │   ├── httppractice/        # 2.2
 │   ├── protobufpractice/    # 2.3
 │   ├── gormpractice/        # 2.4（114–121）
-│   └── redispractice/       # 2.5（122–128）
+│   ├── redispractice/       # 2.5（122–128）
+│   └── shortlinkpractice/   # 2.6（129–134）
 └── test_internal/
 ```
 
 ## 进度对照
 
-| 路线 | 状态 | 落在哪 |
-|------|------|--------|
-| 1.1–1.5 | 练习库已齐 | `pkg/part01/...` |
-| **2.1–2.3** | 练习中 | `pkg/part02/...` |
-| **2.4** MySQL + GORM | 练习库已齐 | `pkg/part02/gormpractice`（114–121） |
-| **2.5** Redis | 进行中 | `pkg/part02/redispractice`（122–128） |
+| 路线　　　　　　　　 | 状态　　　 | 落在哪　　　　　　　　　　　　　　　　　　|
+| ----------------------| ------------| -------------------------------------------|
+| 1.1–1.5　　　　　　　| 练习库已齐 | `pkg/part01/...`　　　　　　　　　　　　　|
+| **2.1–2.3**　　　　　| 练习中　　 | `pkg/part02/...`　　　　　　　　　　　　　|
+| **2.4** MySQL + GORM | 练习库已齐 | `pkg/part02/gormpractice`（114–121）　　　|
+| **2.5** Redis　　　　| 练习库已齐 | `pkg/part02/redispractice`（122–128）　　 |
+| **2.6** 综合短链　　 | 进行中　　 | `pkg/part02/shortlinkpractice`（129–134） |
 
 ## 2.4 题目与场景对照
 
@@ -121,9 +123,26 @@ export GOPROXY=https://goproxy.cn,direct
 go get github.com/redis/go-redis/v9
 ```
 
+## 2.6 题目与场景对照
+
+| 题 | 知识要点 | 贴近场景 |
+|----|----------|----------|
+| 129 | MySQL + Redis 依赖、`AutoMigrate` | 短链表就绪 |
+| 130 | 创建短链写 MySQL | 生成短码入库 |
+| 131 | Cache-Aside + HTTP 302 | 访问优先 Redis，未命中回填 |
+| 132 | CSV / `io.Reader` 批量导入 | 运营批量建链 |
+| 133 | Redis 计数 + 汇总落库 | 跳转统计 |
+| 134 | `context` 超时 + 冒烟 | 稳定性约束 |
+
+依赖与 2.4 / 2.5 相同（`training_lib` + 本机 Redis）。跳过：`TRAINING_SKIP_MYSQL=1` 或 `TRAINING_SKIP_REDIS=1`。
+
 ## 常用命令
 
 ```bash
+# 2.6
+go test -v ./pkg/part02/shortlinkpractice/
+go doc training_golang/pkg/part02/shortlinkpractice.Question131
+
 # 2.5
 go test -v ./pkg/part02/redispractice/
 go doc training_golang/pkg/part02/redispractice.Question125
@@ -137,4 +156,4 @@ go generate ./pkg/part02/protobufpractice/
 go test -v ./pkg/part02/protobufpractice/
 ```
 
-实现完 2.5 后进入路线图 **2.6** 综合 IO 小项目。
+实现完 2.6 后进入路线图 **Part 03** Web 项目搭建。
