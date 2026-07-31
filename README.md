@@ -4,9 +4,8 @@
 
 - **Part 01**：语言基础与标准库直觉 → `pkg/part01/`
 - **Part 02**：文件 / HTTP / Protobuf / MySQL(GORM) / Redis / 短链综合 → `pkg/part02/`
-- **Part 03**：Web 项目搭建（Gin 分层、认证、Docker 等）→ **另开独立仓库/项目**，不再塞进本练习库
 
-本机依赖约定：**MySQL / Redis 用 apt 本机服务，训练统一不用 Docker**（Part 03 部署章节再学 Compose）。
+本机依赖约定：**MySQL / Redis 用 apt 本机服务，训练统一不用 Docker**。
 
 ## 目录
 
@@ -25,28 +24,15 @@ training_golang/
 
 ## 进度对照
 
-| 路线　　　　　　　　 | 状态　　　 | 落在哪　　　　　　　　　　　　　　　　　　|
-| ----------------------| ------------| -------------------------------------------|
-| **1.1–1.5**　　　　　| 练习库已齐 | `pkg/part01/...`　　　　　　　　　　　　　|
-| **2.1** 文件 IO　　　| 练习库已齐 | `pkg/part02/fileiopractice`　　　　　　　 |
-| **2.2** HTTP　　　　 | 练习库已齐 | `pkg/part02/httppractice`　　　　　　　　 |
-| **2.3** Protobuf　　 | 练习库已齐 | `pkg/part02/protobufpractice`　　　　　　 |
-| **2.4** MySQL + GORM | 练习库已齐 | `pkg/part02/gormpractice`（114–121）　　　|
-| **2.5** Redis　　　　| 练习库已齐 | `pkg/part02/redispractice`（122–128）　　 |
-| **2.6** 综合短链　　 | 练习库已齐 | `pkg/part02/shortlinkpractice`（129–134） |
-| **Part 03** Web 项目 | 计划另仓　 | 见下方说明　　　　　　　　　　　　　　　　|
-
-## Part 03 怎么学（推完 GitHub 后）
-
-路线图 Part 03 目标是「可上线的业务后端」，形态是 **Gin + 分层 + 配置/日志 + 测试 + Docker**，与本仓库的 `QuestionN` 练习不同。
-
-建议：
-
-1. 新建独立项目（例如 `train_hub/go-web-app/` 或单独 GitHub 仓）
-2. 从 3.1 空壳开始：`/healthz`、配置、handler → service → repository
-3. 毕业场景三选一做透：博客/论坛、简易电商、短链增强版
-
-本仓库保留为 Part 01–02 题库与笔记对照，可随时 `go test` / `go doc` 复习。
+| 路线 | 状态 | 落在哪 |
+|------|------|--------|
+| **1.1–1.5** | 练习库已齐 | `pkg/part01/...` |
+| **2.1** 文件 IO | 练习库已齐 | `pkg/part02/fileiopractice` |
+| **2.2** HTTP | 练习库已齐 | `pkg/part02/httppractice` |
+| **2.3** Protobuf | 练习库已齐 | `pkg/part02/protobufpractice` |
+| **2.4** MySQL + GORM | 练习库已齐 | `pkg/part02/gormpractice`（114–121） |
+| **2.5** Redis | 练习库已齐 | `pkg/part02/redispractice`（122–128） |
+| **2.6** 综合短链 | 练习库已齐 | `pkg/part02/shortlinkpractice`（129–134） |
 
 ## 2.4 题目与场景对照
 
