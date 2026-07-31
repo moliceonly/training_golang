@@ -1,22 +1,25 @@
 # training_golang
 
-对齐 `go-web-roadmap.html`。
+对齐 [`go-web-roadmap.html`](../go-web-roadmap.html) 的 **Part 01–02** 练习库（题干 + `QuestionN` 演示 + `_test.go` 串跑）。
 
-- **Part 01**：1.1–1.5 在 `pkg/part01/`
-- **Part 02**：2.1–2.5 已有练习；进行中 **2.6** 综合短链小项目（本机 apt MySQL + Redis）
+- **Part 01**：语言基础与标准库直觉 → `pkg/part01/`
+- **Part 02**：文件 / HTTP / Protobuf / MySQL(GORM) / Redis / 短链综合 → `pkg/part02/`
+- **Part 03**：Web 项目搭建（Gin 分层、认证、Docker 等）→ **另开独立仓库/项目**，不再塞进本练习库
+
+本机依赖约定：**MySQL / Redis 用 apt 本机服务，训练统一不用 Docker**（Part 03 部署章节再学 Compose）。
 
 ## 目录
 
 ```text
 training_golang/
-├── pkg/part01/
+├── pkg/part01/                 # 1.1–1.5
 ├── pkg/part02/
-│   ├── fileiopractice/      # 2.1
-│   ├── httppractice/        # 2.2
-│   ├── protobufpractice/    # 2.3
-│   ├── gormpractice/        # 2.4（114–121）
-│   ├── redispractice/       # 2.5（122–128）
-│   └── shortlinkpractice/   # 2.6（129–134）
+│   ├── fileiopractice/         # 2.1
+│   ├── httppractice/           # 2.2
+│   ├── protobufpractice/       # 2.3
+│   ├── gormpractice/           # 2.4（114–121）
+│   ├── redispractice/          # 2.5（122–128）
+│   └── shortlinkpractice/      # 2.6（129–134）
 └── test_internal/
 ```
 
@@ -24,11 +27,26 @@ training_golang/
 
 | 路线　　　　　　　　 | 状态　　　 | 落在哪　　　　　　　　　　　　　　　　　　|
 | ----------------------| ------------| -------------------------------------------|
-| 1.1–1.5　　　　　　　| 练习库已齐 | `pkg/part01/...`　　　　　　　　　　　　　|
-| **2.1–2.3**　　　　　| 练习中　　 | `pkg/part02/...`　　　　　　　　　　　　　|
+| **1.1–1.5**　　　　　| 练习库已齐 | `pkg/part01/...`　　　　　　　　　　　　　|
+| **2.1** 文件 IO　　　| 练习库已齐 | `pkg/part02/fileiopractice`　　　　　　　 |
+| **2.2** HTTP　　　　 | 练习库已齐 | `pkg/part02/httppractice`　　　　　　　　 |
+| **2.3** Protobuf　　 | 练习库已齐 | `pkg/part02/protobufpractice`　　　　　　 |
 | **2.4** MySQL + GORM | 练习库已齐 | `pkg/part02/gormpractice`（114–121）　　　|
 | **2.5** Redis　　　　| 练习库已齐 | `pkg/part02/redispractice`（122–128）　　 |
-| **2.6** 综合短链　　 | 进行中　　 | `pkg/part02/shortlinkpractice`（129–134） |
+| **2.6** 综合短链　　 | 练习库已齐 | `pkg/part02/shortlinkpractice`（129–134） |
+| **Part 03** Web 项目 | 计划另仓　 | 见下方说明　　　　　　　　　　　　　　　　|
+
+## Part 03 怎么学（推完 GitHub 后）
+
+路线图 Part 03 目标是「可上线的业务后端」，形态是 **Gin + 分层 + 配置/日志 + 测试 + Docker**，与本仓库的 `QuestionN` 练习不同。
+
+建议：
+
+1. 新建独立项目（例如 `train_hub/go-web-app/` 或单独 GitHub 仓）
+2. 从 3.1 空壳开始：`/healthz`、配置、handler → service → repository
+3. 毕业场景三选一做透：博客/论坛、简易电商、短链增强版
+
+本仓库保留为 Part 01–02 题库与笔记对照，可随时 `go test` / `go doc` 复习。
 
 ## 2.4 题目与场景对照
 
@@ -43,11 +61,7 @@ training_golang/
 | 120 | Belongs To + Preload | 借阅详情（书+读者） |
 | 121 | EXPLAIN、占位符、迁移策略 | 安全与排障 |
 
-## MySQL（apt 本机安装，训练统一方案）
-
-本仓库 **2.4 及后续需要 MySQL 的练习一律用 apt 安装的本机服务**，不使用 Docker 跑 MySQL。
-
-练习账号（已写入 `gormpractice` 默认连接）：
+## MySQL（apt 本机安装）
 
 | 项 | 值 |
 |----|-----|
@@ -55,16 +69,14 @@ training_golang/
 | 密码 | `Train2026Lib!` |
 | 库名 | `training_lib` |
 | 主机 | `127.0.0.1:3306` |
-
-代码里用 `mysql.Config` + `FormatDSN()` 生成连接串，避免手写 `%40` / `%21` 出错。
+| 覆盖 DSN | `TRAINING_MYSQL_DSN` |
+| 跳过单测 | `TRAINING_SKIP_MYSQL=1` |
 
 ```bash
-# 安装与启动（Ubuntu / WSL）
-sudo apt update
-sudo apt install -y mysql-server
+sudo apt update && sudo apt install -y mysql-server
 sudo service mysql start
 
-# 用 root（sudo mysql）建库与练习用户（若尚未创建）
+# 若尚未建库/用户（sudo mysql）：
 # CREATE DATABASE IF NOT EXISTS training_lib DEFAULT CHARSET utf8mb4;
 # CREATE USER 'trainer'@'localhost' IDENTIFIED BY 'Train2026Lib!';
 # CREATE USER 'trainer'@'127.0.0.1' IDENTIFIED BY 'Train2026Lib!';
@@ -72,12 +84,8 @@ sudo service mysql start
 # GRANT ALL PRIVILEGES ON training_lib.* TO 'trainer'@'127.0.0.1';
 # FLUSH PRIVILEGES;
 
-# 自检
-mysql -u trainer -p -h 127.0.0.1 -e "SELECT 1; SHOW DATABASES;"
-# 密码：Train2026Lib!
+mysql -u trainer -p -h 127.0.0.1 -e "SELECT 1;"
 ```
-
-实现 GORM 代码时再装驱动：
 
 ```bash
 export GOPROXY=https://goproxy.cn,direct
@@ -96,29 +104,19 @@ go get gorm.io/gorm gorm.io/driver/mysql
 | 127 | `SET NX EX` 分布式锁 | 加锁 / 校验 value 解锁 |
 | 128 | 固定窗口限流 | 按 IP，超限对应 429 |
 
-## Redis（apt 本机安装，训练统一方案）
-
-本仓库 **2.5 练习一律用 apt 安装的本机 Redis**，不使用 Docker 跑 Redis。
+## Redis（apt 本机安装）
 
 | 项 | 值 |
 |----|-----|
 | 地址 | `127.0.0.1:6379` |
-| 覆盖 | 环境变量 `TRAINING_REDIS_ADDR` |
+| 覆盖 | `TRAINING_REDIS_ADDR` |
 | 跳过单测 | `TRAINING_SKIP_REDIS=1` |
 
 ```bash
-# 安装与启动（Ubuntu / WSL）
-sudo apt update
 sudo apt install -y redis-server
-sudo service redis-server start   # 或: sudo systemctl start redis-server
+sudo service redis-server start
+redis-cli ping   # PONG
 
-# 自检
-redis-cli ping   # 应返回 PONG
-```
-
-实现 Redis 代码时再装客户端：
-
-```bash
 export GOPROXY=https://goproxy.cn,direct
 go get github.com/redis/go-redis/v9
 ```
@@ -134,26 +132,26 @@ go get github.com/redis/go-redis/v9
 | 133 | Redis 计数 + 汇总落库 | 跳转统计 |
 | 134 | `context` 超时 + 冒烟 | 稳定性约束 |
 
-依赖与 2.4 / 2.5 相同（`training_lib` + 本机 Redis）。跳过：`TRAINING_SKIP_MYSQL=1` 或 `TRAINING_SKIP_REDIS=1`。
+依赖同 2.4 / 2.5。跳过：`TRAINING_SKIP_MYSQL=1` 或 `TRAINING_SKIP_REDIS=1`。
 
 ## 常用命令
 
 ```bash
-# 2.6
-go test -v ./pkg/part02/shortlinkpractice/
+cd training_golang
+export GOPROXY=https://goproxy.cn,direct
+
+# Part 02
+go test -v -count=1 ./pkg/part02/shortlinkpractice/
+go test -v -count=1 ./pkg/part02/redispractice/
+go test -v -count=1 ./pkg/part02/gormpractice/
+go generate ./pkg/part02/protobufpractice/...
+go test -v -count=1 ./pkg/part02/protobufpractice/
+go test -v -count=1 ./pkg/part02/httppractice/
+go test -v -count=1 ./pkg/part02/fileiopractice/
+
+# 看题干
 go doc training_golang/pkg/part02/shortlinkpractice.Question131
-
-# 2.5
-go test -v ./pkg/part02/redispractice/
-go doc training_golang/pkg/part02/redispractice.Question125
-
-# 2.4
-go test -v ./pkg/part02/gormpractice/
 go doc training_golang/pkg/part02/gormpractice.Question117
-
-# 2.3
-go generate ./pkg/part02/protobufpractice/
-go test -v ./pkg/part02/protobufpractice/
 ```
 
-实现完 2.6 后进入路线图 **Part 03** Web 项目搭建。
+指令速查笔记可参考仓库外的 `command.md`（若已同步到个人笔记目录）。
